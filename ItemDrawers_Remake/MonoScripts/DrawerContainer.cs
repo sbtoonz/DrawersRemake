@@ -5,13 +5,13 @@
 // Assembly location: C:\Users\zarboz\Desktop\SavingMods\OdinPlus-ItemDrawers_Remake-0.0.6\plugins\ItemDrawers.dll
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using ItemDrawers_Remake;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
+
 public class DrawerContainer : Container, Hoverable, Interactable
 {
   public Image _image;
@@ -31,28 +31,28 @@ public class DrawerContainer : Container, Hoverable, Interactable
     m_nview = gameObject.GetComponent<ZNetView>();
     _piece = GetComponent<Piece>();
     _image.gameObject.SetActive(false);
-    if ((UnityEngine.Object) m_nview != (UnityEngine.Object) null && m_nview.GetZDO() != null)
+    if (m_nview != null && m_nview.GetZDO() != null)
     {
       name = string.Format("Container_{0}", m_nview.GetZDO().m_uid);
       m_name = "piece_chest_drawer";
       m_nview = m_nview;
-      m_inventory = new Inventory(name, (Sprite) null, 1, 1);
-      m_inventory.m_onChanged = m_inventory.m_onChanged + new Action(OnInventoryChanged);
-      m_nview.Register<int>("DrawerDrop", new Action<long, int>(RPC_Drop));
-      m_nview.Register<ZDOID>("DrawerDropResponse", new Action<long, ZDOID>(RPC_DropResponse));
-      m_nview.Register("DrawerClear", new Action<long>(RPC_Clear));
-      m_nview.Register<string, int>("DrawerAddItem", new Action<long, string, int>(RPC_AddItem));
-      m_nview.Register<string, int>("DrawerAddItemResponse", new Action<long, string, int>(RPC_AddItemResponse));
+      m_inventory = new Inventory(name, null, 1, 1);
+      m_inventory.m_onChanged = m_inventory.m_onChanged + OnInventoryChanged;
+      m_nview.Register("DrawerDrop", new Action<long, int>(RPC_Drop));
+      m_nview.Register("DrawerDropResponse", new Action<long, ZDOID>(RPC_DropResponse));
+      m_nview.Register("DrawerClear", RPC_Clear);
+      m_nview.Register("DrawerAddItem", new Action<long, string, int>(RPC_AddItem));
+      m_nview.Register("DrawerAddItemResponse", new Action<long, string, int>(RPC_AddItemResponse));
     }
     WearNTear component = GetComponent<WearNTear>();
     if (component != null)
-      component.m_onDestroyed += new Action(((Container) this).OnDestroyed);
+      component.m_onDestroyed += ((Container) this).OnDestroyed;
     InvokeRepeating("CheckForChanges", 0.0f, 1f);
   }
 
   private void RetreiveItems()
   {
-    if (_quantity >= MaxItems || !RetreiveEnabled || _item == null || !(bool) (UnityEngine.Object) m_nview || !m_nview.IsOwner())
+    if (_quantity >= MaxItems || !RetreiveEnabled || _item == null || !(bool) (Object) m_nview || !m_nview.IsOwner())
       return;
     if (_pickupDelay > 0)
     {
@@ -60,15 +60,15 @@ public class DrawerContainer : Container, Hoverable, Interactable
     }
     else
     {
-      foreach (Collider collider in Physics.OverlapSphere(transform.position + Vector3.up, (float) RetrieveRadius, (int) _pickupMask))
+      foreach (Collider collider in Physics.OverlapSphere(transform.position + Vector3.up, RetrieveRadius, _pickupMask))
       {
-        if ((bool) (UnityEngine.Object) collider.attachedRigidbody)
+        if ((bool) (Object) collider.attachedRigidbody)
         {
           ItemDrop component1 = collider.attachedRigidbody.GetComponent<ItemDrop>();
-          if (!((UnityEngine.Object) component1 == (UnityEngine.Object) null) && !((UnityEngine.Object) component1.m_itemData.m_dropPrefab != (UnityEngine.Object) _item.m_dropPrefab))
+          if (!(component1 == null) && !(component1.m_itemData.m_dropPrefab != _item.m_dropPrefab))
           {
             ZNetView component2 = component1.GetComponent<ZNetView>();
-            if ((bool) (UnityEngine.Object) component2 && component2.IsValid())
+            if ((bool) (Object) component2 && component2.IsValid())
             {
               if (!component1.CanPickup())
               {
@@ -95,11 +95,11 @@ public class DrawerContainer : Container, Hoverable, Interactable
     UpdateVisuals();
   }
 
-  public new string GetHoverName() => !(bool) (UnityEngine.Object) _piece ? string.Empty : Localization.instance.Localize(_piece.m_name);
+  public new string GetHoverName() => !(bool) (Object) _piece ? string.Empty : Localization.instance.Localize(_piece.m_name);
 
   public new string GetHoverText()
   {
-    string text = _item != null ? string.Format("<color=aqua>{0}</color> x {1}", (object) _item.m_shared.m_name, (object) _quantity) : "$piece_container_empty";
+    string text = _item != null ? string.Format("<color=blue>{0}</color> x {1}", _item.m_shared.m_name, _quantity) : "$piece_container_empty";
     if (!ZInput.IsGamepadActive())
     {
       KeyCode keyCode = ItemDrawersMod._configKeyDepositAll.Value;
@@ -125,7 +125,7 @@ public class DrawerContainer : Container, Hoverable, Interactable
 
   public new bool Interact(Humanoid user, bool hold, bool alt)
   {
-    if (_item == null || (UnityEngine.Object) user != (UnityEngine.Object) Player.m_localPlayer || !PrivateArea.CheckAccess(transform.position))
+    if (_item == null || user != Player.m_localPlayer || !PrivateArea.CheckAccess(transform.position))
       return false;
     return !ZInput.IsGamepadActive() ? OnKeyboardInteract(Player.m_localPlayer) : OnGamepadInteract(Player.m_localPlayer);
   }
@@ -147,22 +147,22 @@ public class DrawerContainer : Container, Hoverable, Interactable
   private bool ProcessInputInternal(Player player, bool mod0, bool mod1)
   {
     if (mod0)
-      return UseItem((Humanoid) player, _item);
+      return UseItem(player, _item);
     if (mod1 && _quantity <= 0)
       m_nview.InvokeRPC("DrawerClear");
     else if (_quantity > 0)
-      m_nview.InvokeRPC("DrawerDrop", (object) (mod1 ? 1 : _item.m_shared.m_maxStackSize));
+      m_nview.InvokeRPC("DrawerDrop", mod1 ? 1 : _item.m_shared.m_maxStackSize);
     return true;
   }
 
   public new bool UseItem(Humanoid user, ItemDrop.ItemData item)
   {
-    if (item.m_shared.m_maxStackSize <= 1 || _item != null && !((UnityEngine.Object) _item.m_dropPrefab == (UnityEngine.Object) item.m_dropPrefab))
+    if (item.m_shared.m_maxStackSize <= 1 || _item != null && !(_item.m_dropPrefab == item.m_dropPrefab))
       return false;
     int num = user.GetInventory().CountItems(item.m_shared.m_name);
     if (num <= 0)
       return false;
-    m_nview.InvokeRPC("DrawerAddItem", (object) item.m_dropPrefab.name, (object) num);
+    m_nview.InvokeRPC("DrawerAddItem", item.m_dropPrefab.name, num);
     return true;
   }
 
@@ -187,7 +187,7 @@ public class DrawerContainer : Container, Hoverable, Interactable
       m_inventory.m_inventory.Clear();
       ItemDrop.ItemData itemData = _item.Clone();
       itemData.m_stack = _quantity;
-      itemData.m_shared = CommonUtils.Clone<ItemDrop.ItemData.SharedData>(itemData.m_shared);
+      itemData.m_shared = CommonUtils.Clone(itemData.m_shared);
       itemData.m_shared.m_maxStackSize = MaxItems;
       m_inventory.m_inventory.Add(itemData);
     }
@@ -196,14 +196,14 @@ public class DrawerContainer : Container, Hoverable, Interactable
   private ItemDrop Drop(int quantity)
   {
     if (_quantity <= 0)
-      return (ItemDrop) null;
+      return null;
     GameObject dropPrefab = _item.m_dropPrefab;
     int stack = Mathf.Min(quantity, _quantity);
     _quantity -= stack;
     _pickupDelay = 5;
     UpdateInventory();
     Vector3 position = transform.position + transform.forward * -0.5f;
-    GameObject gameObject = Instantiate<GameObject>(dropPrefab, position, Quaternion.identity);
+    GameObject gameObject = Instantiate(dropPrefab, position, Quaternion.identity);
     gameObject.GetComponent<Rigidbody>().velocity = Vector3.up * 4f + transform.forward * 4f;
     ItemDrop component = gameObject.GetComponent<ItemDrop>();
     component.SetStack(stack);
@@ -213,20 +213,20 @@ public class DrawerContainer : Container, Hoverable, Interactable
   public int AddItem(string name, int stack)
   {
     GameObject itemPrefab = ObjectDB.instance.GetItemPrefab(name);
-    if ((UnityEngine.Object) itemPrefab == (UnityEngine.Object) null)
+    if (itemPrefab == null)
     {
-      ZLog.Log((object) ("Failed to find item prefab " + name));
+      ZLog.Log("Failed to find item prefab " + name);
       return 0;
     }
     ItemDrop component = itemPrefab.GetComponent<ItemDrop>();
-    if ((UnityEngine.Object) component == (UnityEngine.Object) null)
+    if (component == null)
     {
-      ZLog.Log((object) ("Invalid item " + name));
+      ZLog.Log("Invalid item " + name);
       return 0;
     }
-    if (_item != null && (UnityEngine.Object) _item.m_dropPrefab != (UnityEngine.Object) itemPrefab)
+    if (_item != null && _item.m_dropPrefab != itemPrefab)
     {
-      ZLog.Log((object) ("Cannot add to container " + name));
+      ZLog.Log("Cannot add to container " + name);
       return 0;
     }
     stack = Math.Min(stack, MaxItems - _quantity);
@@ -239,7 +239,7 @@ public class DrawerContainer : Container, Hoverable, Interactable
     return stack;
   }
 
-  private void OnContainerChanged()
+  private new void OnContainerChanged()
   {
     if (_loading || !m_nview.IsOwner())
       return;
@@ -259,12 +259,12 @@ public class DrawerContainer : Container, Hoverable, Interactable
       return;
     int num = AddItem(prefabName, quantity);
     if (num > 0)
-      m_nview.InvokeRPC(playerId, "DrawerAddItemResponse", (object) prefabName, (object) num);
+      m_nview.InvokeRPC(playerId, "DrawerAddItemResponse", prefabName, num);
   }
 
   private void RPC_AddItemResponse(long _, string prefabName, int quantity)
   {
-    if (!(bool) (UnityEngine.Object) Player.m_localPlayer || quantity <= 0)
+    if (!(bool) (Object) Player.m_localPlayer || quantity <= 0)
       return;
     ItemDrop component = ObjectDB.instance.GetItemPrefab(prefabName).GetComponent<ItemDrop>();
     if (component != null)
@@ -291,17 +291,17 @@ public class DrawerContainer : Container, Hoverable, Interactable
     {
       OnContainerChanged();
       ZDOID uid = itemDrop.m_nview.GetZDO().m_uid;
-      m_nview.InvokeRPC(playerId, "DrawerDropResponse", (object) uid);
+      m_nview.InvokeRPC(playerId, "DrawerDropResponse", uid);
     }
   }
 
   private void RPC_DropResponse(long _, ZDOID drop)
   {
     GameObject instance = ZNetScene.instance.FindInstance(drop);
-    if (!((UnityEngine.Object) instance != (UnityEngine.Object) null))
+    if (!(instance != null))
       return;
     ItemDrop component = instance.GetComponent<ItemDrop>();
-    if (!((UnityEngine.Object) component == (UnityEngine.Object) null) && Player.m_localPlayer.GetInventory().AddItem(component.m_itemData))
+    if (!(component == null) && Player.m_localPlayer.GetInventory().AddItem(component.m_itemData))
     {
       Player.m_localPlayer.ShowPickupMessage(component.m_itemData, component.m_itemData.m_stack);
       ZNetScene.instance.Destroy(instance);
@@ -310,14 +310,14 @@ public class DrawerContainer : Container, Hoverable, Interactable
 
   private void UpdateVisuals()
   {
-    if ((UnityEngine.Object) _image != (UnityEngine.Object) null)
+    if (_image != null)
     {
-      bool flag = _item != null && ((IEnumerable<Sprite>) _item.m_shared.m_icons).Count<Sprite>() > 0;
+      bool flag = _item != null && _item.m_shared.m_icons.Length > 0;
       _image.gameObject.SetActive(flag);
       if (flag)
         _image.sprite = _item.m_shared.m_icons[0];
     }
-    if (!((UnityEngine.Object) _text != (UnityEngine.Object) null))
+    if (!(_text != null))
       return;
     _text.SetText(_quantity > 0 ? _quantity.ToString() : string.Empty);
   }
@@ -325,18 +325,18 @@ public class DrawerContainer : Container, Hoverable, Interactable
   private void Clear()
   {
     _quantity = 0;
-    _item = (ItemDrop.ItemData) null;
+    _item = null;
     m_inventory.m_inventory.Clear();
     UpdateVisuals();
   }
 
-  private void Save()
+  private new void Save()
   {
     ZPackage zpackage = new ZPackage();
     zpackage.Write(0);
     if (_item != null)
     {
-      zpackage.Write((UnityEngine.Object) _item.m_dropPrefab == (UnityEngine.Object) null ? "" : _item.m_dropPrefab.name);
+      zpackage.Write(_item.m_dropPrefab == null ? "" : _item.m_dropPrefab.name);
       zpackage.Write(_quantity);
     }
     else
@@ -346,7 +346,7 @@ public class DrawerContainer : Container, Hoverable, Interactable
     m_lastRevision = m_nview.GetZDO().DataRevision;
   }
 
-  private void Load()
+  private new void Load()
   {
     if ((int) m_nview.GetZDO().DataRevision == (int) m_lastRevision)
       return;
@@ -367,12 +367,12 @@ public class DrawerContainer : Container, Hoverable, Interactable
     }
   }
 
-  public void OnDestroyed()
+  public new void OnDestroyed()
   {
     if (!m_nview.IsOwner() || _item == null)
       return;
     do
-      ;
-    while (_quantity > 0 && (bool) (UnityEngine.Object) Drop(_item.m_shared.m_maxStackSize));
+    {
+    } while (_quantity > 0 && (bool) (Object) Drop(_item.m_shared.m_maxStackSize));
   }
 }
