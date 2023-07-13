@@ -7,8 +7,8 @@
     <ProjectGuid>{F9B815D6-6EF4-44DB-9A0F-436849B24670}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ModFrame</RootNamespace>
-    <AssemblyName>ModFrame</AssemblyName>
+    <RootNamespace>ItemDrawers_Remake</RootNamespace>
+    <AssemblyName>ItemDrawers_Remake</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>9</LangVersion>
@@ -71,18 +71,54 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\unstripped_corlib\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\unstripped_corlib\UnityEngine.AssetBundleModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\unstripped_corlib\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Physics2DModule">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\unstripped_corlib\UnityEngine.Physics2DModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\unstripped_corlib\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\unstripped_corlib\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIElementsModule">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\unstripped_corlib\UnityEngine.UIElementsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIElementsNativeModule">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\unstripped_corlib\UnityEngine.UIElementsNativeModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\unstripped_corlib\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommonUtils.cs" />
     <Compile Include="ModCore.cs" />
+    <Compile Include="MonoScripts\DrawerContainer.cs" />
+    <Compile Include="MonoScripts\FacePlayer.cs" />
+    <Compile Include="MonoScripts\ShaderReplacerNew.cs" />
+    <Compile Include="Patches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PieceManager\PieceManager.csproj">
+      <Project>{87028c9b-05ea-4439-a68c-2978d5e08740}</Project>
+      <Name>PieceManager</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServerSync\ServerSync.csproj">
       <Project>{e16c3332-50b4-4da6-9e8a-a590c4e5cd49}</Project>
       <Name>ServerSync</Name>
@@ -92,6 +128,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\Unity\AssetBundles\StandaloneWindows\item_drawer">
+      <Link>assets\item_drawer</Link>
+    </EmbeddedResource>
     <Content Include="ILRepack.targets" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
